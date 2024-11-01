@@ -6224,7 +6224,7 @@ SoundSaveState (FILE *fp)
 
   // Write main internal variables
   ywrite (&check, (void *)&scsp.mem4b, 4, 1, fp);
-  ywrite (&check, (void *)&scsp.dac18b, 4, 1, fp);
+  //ywrite (&check, (void *)&scsp.dac18b, 4, 1, fp);
   ywrite (&check, (void *)&scsp.mvol, 4, 1, fp);
 
   ywrite (&check, (void *)&scsp.rbl, 4, 1, fp);
@@ -6568,9 +6568,9 @@ SoundLoadState (FILE *fp, int version, int size)
 
       // Read main internal variables
       yread (&check, (void *)&scsp.mem4b, 4, 1, fp);
-      if( version >= 4){
+      /*if( version >= 4){
         yread (&check, (void *)&scsp.dac18b, 4, 1, fp);
-      }
+      }*/
       yread (&check, (void *)&scsp.mvol, 4, 1, fp);
 
       yread (&check, (void *)&scsp.rbl, 4, 1, fp);

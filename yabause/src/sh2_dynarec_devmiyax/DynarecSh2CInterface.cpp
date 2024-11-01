@@ -870,7 +870,7 @@ int DebugEachClock() {
       fflush(dfp);
     }
 #endif
-  if (!DynarecSh2::CurrentContext->IsSlave()) {
+/*  if (!DynarecSh2::CurrentContext->IsSlave()) {
 
     s32 m = INSTRUCTION_C(inst);
     s32 n = INSTRUCTION_B(inst);
@@ -931,7 +931,7 @@ int DebugEachClock() {
 #endif
   }
 #endif
-
+*/
 
     // MACW
     if ((inst & 0xf00f) == 0x400f) {

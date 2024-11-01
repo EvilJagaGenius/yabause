@@ -21,6 +21,8 @@
 #ifndef THREADS_H
 #define THREADS_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -118,7 +120,7 @@ void YabThreadUSleep( unsigned int stime );
 
 int YabCopyFile(const char * src, const char * dst);
 int YabMakeCleanDir( const char * dirname );
-int YabNanosleep(u64 ns);
+int YabNanosleep(uint64_t ns);
 
 ///////////////////////////////////////////////////////////////////////////
 
