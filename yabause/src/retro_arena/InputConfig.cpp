@@ -75,6 +75,7 @@ InputConfig::InputConfig(int deviceId, const std::string& deviceName, const std:
 
 void InputConfig::clear()
 {
+  printf("Clearing input config\n");
   mNameMap.clear();
 }
 
@@ -90,6 +91,7 @@ void InputConfig::mapInput(const std::string& name, Input input)
 
 void InputConfig::unmapInput(const std::string& name)
 {
+  printf("Unmapping input\n");
   auto it = mNameMap.find(toLower(name));
   if(it != mNameMap.end())
     mNameMap.erase(it);
@@ -136,12 +138,14 @@ bool InputConfig::isMappedTo(const std::string& name, Input input)
 
 std::vector<std::string> InputConfig::getMappedTo(Input input)
 {
+  printf("input.device = %d, input.type = %d, input.id = %d\n", input.device, input.type, input.id);
   std::vector<std::string> maps;
 
-  typedef std::map<std::string, Input>::iterator it_type;
-  for(it_type iterator = mNameMap.begin(); iterator != mNameMap.end(); iterator++)
+  std::map<std::string, Input>::iterator it;
+  for(it = mNameMap.begin(); it != mNameMap.end(); it++)
   {
-    Input chk = iterator->second;
+    Input chk = it->second;
+    printf("chk.device = %d, chk.type = %d, chk.id = %d\n", chk.device, chk.type, chk.id);
 
     if(!chk.configured)
       continue;
@@ -152,7 +156,7 @@ std::vector<std::string> InputConfig::getMappedTo(Input input)
       {
         if(input.value == 0 || input.value & chk.value)
         {
-          maps.push_back(iterator->first);
+          maps.push_back(it->first);
         }
         continue;
       }
@@ -160,9 +164,9 @@ std::vector<std::string> InputConfig::getMappedTo(Input input)
       if(input.type == TYPE_AXIS)
       {
         if(input.value == 0 || chk.value == input.value)
-          maps.push_back(iterator->first);
+          maps.push_back(it->first);
       }else{
-        maps.push_back(iterator->first);
+        maps.push_back(it->first);
       }
     }
   }

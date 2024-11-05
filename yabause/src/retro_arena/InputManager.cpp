@@ -143,8 +143,9 @@ uint32_t genidAnalogjson( int user, int joyId, const json & result ){
 }
 
 
-int setPlayerKeys( void * padbits, int user, int joyId, const json & player ){
-
+int InputManager::setPlayerKeys( void * padbits, int user, int joyId, const json & player ){
+    printf("Setting player keys, user=%d, joyId=%d\n", user, joyId);
+    
     if( player.find("up") != player.end()) PerSetKey(genidjson(user,joyId,player["up"]),PERPAD_UP, padbits);
     if( player.find("down") != player.end()) PerSetKey(genidjson(user,joyId,player["down"]),PERPAD_DOWN, padbits);
     if( player.find("left") != player.end()) PerSetKey(genidjson(user,joyId,player["left"]),PERPAD_LEFT, padbits);
@@ -157,7 +158,7 @@ int setPlayerKeys( void * padbits, int user, int joyId, const json & player ){
     if( player.find("y") != player.end()) PerSetKey(genidjson(user,joyId,player["y"]),PERPAD_Y, padbits);
     if( player.find("z") != player.end()) PerSetKey(genidjson(user,joyId,player["z"]),PERPAD_Z, padbits);
     if( player.find("l") != player.end()) PerSetKey(genidjson(user,joyId,player["l"]),PERPAD_LEFT_TRIGGER, padbits);
-    if( player.find("r") != player.end())PerSetKey(genidjson(user,joyId,player["r"]),PERPAD_RIGHT_TRIGGER, padbits);    
+    if( player.find("r") != player.end())PerSetKey(genidjson(user,joyId,player["r"]),PERPAD_RIGHT_TRIGGER, padbits);
 
     if( player.find("analogx") != player.end()) {
       PerSetKey(genidAnalogjson(user,joyId,player["analogx"]), PERANALOG_AXIS1, padbits);
@@ -175,6 +176,23 @@ int setPlayerKeys( void * padbits, int user, int joyId, const json & player ){
       PerSetKey(genidAnalogjson(user,joyId,player["analogright"]), PERANALOG_AXIS3, padbits);  
       InputManager::getInstance()->_analogType[joyId] = 1; 
     }
+
+    InputConfig* inputConfig = mInputConfigs[joyId];
+    inputConfig->mapInput("up", Input(joyId, TYPE_HAT, player["up"]["id"], player["up"]["value"], true));
+	inputConfig->mapInput("down", Input(joyId, TYPE_HAT, player["down"]["id"], player["down"]["value"], true));
+	inputConfig->mapInput("left", Input(joyId, TYPE_HAT, player["left"]["id"], player["left"]["value"], true));
+	inputConfig->mapInput("right", Input(joyId, TYPE_HAT, player["right"]["id"], player["right"]["value"], true));
+	inputConfig->mapInput("start", Input(joyId, TYPE_BUTTON, player["start"]["id"], player["start"]["value"], true));
+	inputConfig->mapInput("select", Input(joyId, TYPE_BUTTON, player["select"]["id"], player["select"]["value"], true));
+	inputConfig->mapInput("a", Input(joyId, TYPE_BUTTON, player["a"]["id"], player["a"]["value"], true));
+	inputConfig->mapInput("b", Input(joyId, TYPE_BUTTON, player["b"]["id"], player["b"]["value"], true));
+	inputConfig->mapInput("c", Input(joyId, TYPE_BUTTON, player["c"]["id"], player["c"]["value"], true));
+	inputConfig->mapInput("x", Input(joyId, TYPE_BUTTON, player["x"]["id"], player["x"]["value"], true));
+	inputConfig->mapInput("y", Input(joyId, TYPE_BUTTON, player["y"]["id"], player["y"]["value"], true));
+	inputConfig->mapInput("z", Input(joyId, TYPE_BUTTON, player["z"]["id"], player["z"]["value"], true));
+	inputConfig->mapInput("l", Input(joyId, TYPE_BUTTON, player["l"]["id"], player["a"]["value"], true));
+	inputConfig->mapInput("r", Input(joyId, TYPE_BUTTON, player["r"]["id"], player["a"]["value"], true));
+
     return 0;
 }
 
@@ -205,7 +223,7 @@ int setDefalutSettings( void * padbits ){
     return 0;
 }
 
-int mapKeys( const json & configs ){
+int InputManager::mapKeys( const json & configs ){
   void * padbits;
   int user = 0;
   PerPortReset();
@@ -254,6 +272,7 @@ int mapKeys( const json & configs ){
       SDL_JoystickID u_joyId = p1["DeviceID"];
       string u_JoyName = p1["deviceName"];
       string u_JoyGuid = p1["deviceGUID"];
+      //InputConfig* inputConfig = mInputConfigs[u_joyId];
       InputManager::genJoyString( name_guid, u_joyId, u_JoyName, u_JoyGuid );
 
       int joyId = -2;
@@ -437,7 +456,7 @@ const std::string input_types[] = {
 
 
 int getPlayerJsonFromInputConfig( int joy, InputConfig * inputconfig, json & player ) {
-  
+  printf("Called getPlayerJsonFromInputConfig\n");
   if( inputconfig == NULL ){
     return -1;
   }
@@ -608,6 +627,7 @@ void InputManager::init( const std::string & fname )
   json j;
   config_fname_ = fname;
   if(!fs::exists(fname)){
+    printf("Converting from EmuStation file\n");
     if( convertFromEmustationFile(fname) != 0 ){
       return;
     }
@@ -621,18 +641,21 @@ void InputManager::init( const std::string & fname )
 
   menu_inputs_.clear();
   std::map<SDL_JoystickID, InputConfig*>::iterator it;
-
+  printf("mInputConfigs.size = %d\n", mInputConfigs.size());
   for ( it = mInputConfigs.begin(); it != mInputConfigs.end(); it++ ){
     MenuInput tmp;
     Input result;
     it->second->getInputByName("select", &result);
     if( result.id == -1 ){
+      //printf("Couldn't find select, using hotkeyenable\n");
       it->second->getInputByName("hotkeyenable", &result);
-    }
-    tmp.select_device_ = it->second->getDeviceId();    
-    tmp.select_button_ = result.id;
-    printf("select_device_ = %d, select_button_ = %d\n", tmp.select_device_, tmp.select_button_ );
-    menu_inputs_.push_back(tmp);
+    } else {
+      //printf("Found select");
+  }
+  tmp.select_device_ = it->second->getDeviceId();    
+  tmp.select_button_ = result.id;
+  printf("select_device_ = %d, select_button_ = %d\n", tmp.select_device_, tmp.select_button_ );
+  menu_inputs_.push_back(tmp);
   }
 }
 
@@ -972,8 +995,10 @@ bool InputManager::parseEventMenu(const SDL_Event& ev ){
   }
   case SDL_JOYBUTTONDOWN:
   case SDL_JOYBUTTONUP:{
+	  printf("Menu button pressed: which=%d, button=%d\n", ev.jbutton.which, ev.jbutton.button);
       InputConfig* cfg = getInputConfigByDevice(ev.jbutton.which);
       evstr = cfg->getMappedTo(Input(ev.jbutton.which, TYPE_BUTTON, ev.jbutton.button, ev.jbutton.state == SDL_PRESSED, false));
+	  printf("evstr = %s\n", evstr);
       if( evstr.size() ) {
         menu_layer_->keyboardEvent(evstr[0],0,ev.jbutton.state == SDL_PRESSED,0);
       }
@@ -1070,6 +1095,7 @@ bool InputManager::parseEvent(const SDL_Event& ev)
   switch(ev.type)
   {
   case SDL_JOYBUTTONUP:{
+	printf("Button pressed: which=%d, button=%d\n", ev.jbutton.which, ev.jbutton.button);
     for( int i=0; i<menu_inputs_.size(); i++  ){
          if( ev.jbutton.button == menu_inputs_[i].select_button_ && 
              ev.jbutton.which == menu_inputs_[i].select_device_ ){
@@ -1079,7 +1105,7 @@ bool InputManager::parseEvent(const SDL_Event& ev)
         event.user.data1 = 0;
         event.user.data2 = 0;
         SDL_PushEvent(&event);
-        return true;
+        return false;
       }   
     }
     return true;
@@ -1103,10 +1129,10 @@ bool InputManager::parseEvent(const SDL_Event& ev)
   case SDL_KEYUP:
      PerKeyUp( ev.key.keysym.sym | KEYBOARD_MASK );
     return true;
-  case SDL_JOYDEVICEADDED:
+  /*case SDL_JOYDEVICEADDED:
     updateConfig();
     addJoystickByDeviceIndex(ev.jdevice.which); // ev.jdevice.which is a device index
-    return true;
+    return true;*/
   case SDL_JOYDEVICEREMOVED:
     updateConfig();  
     removeJoystickByJoystickID(ev.jdevice.which); // ev.jdevice.which is an SDL_JoystickID (instance ID)

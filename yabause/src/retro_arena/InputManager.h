@@ -26,6 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 #include <map>
 #include <string>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 class InputConfig;
 class YWindow;
 
@@ -69,6 +72,9 @@ private:
 
   int convertFromEmustationFile( const std::string & fname );
   pre_input_map joymap_;
+
+  int mapKeys(const json & configs);
+  int setPlayerKeys(void * padbits, int user, int joyId, const json & player);
 
 public:
 	virtual ~InputManager();
